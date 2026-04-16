@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
@@ -39,12 +40,13 @@ def _load_static_index() -> str:
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="crewops-core", version="0.1.0")
-
-    @app.on_event("startup")
-    async def _startup() -> None:
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
         load_tasks()
         ensure_default_settings()
+        yield
+
+    app = FastAPI(title="crewops-core", version="0.1.0", lifespan=lifespan)
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     async def ui() -> str:
