@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>crewops-core</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f6f7f9;
+        color: #111827;
+      }
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 40px;
+      }
+      p {
+        line-height: 1.5;
+        max-width: 760px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        margin-top: 24px;
+      }
+      .item {
+        background: white;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 16px;
+      }
+      code {
+        background: #e5e7eb;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>crewops-core</h1>
+      <p>
+        Local-first task routing, memory, and dashboard APIs for reusable agent runtimes.
+      </p>
+      <div class="grid">
+        <div class="item">
+          <strong>Status</strong>
+          <p>Check <code>/api/status</code> for registered departments and active task count.</p>
+        </div>
+        <div class="item">
+          <strong>Health</strong>
+          <p>Check <code>/api/services/health</code> for local runtime integrations.</p>
+        </div>
+        <div class="item">
+          <strong>Memory</strong>
+          <p>Use the <code>/api/jarvis/*</code> endpoints to inspect the lightweight memory spine.</p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

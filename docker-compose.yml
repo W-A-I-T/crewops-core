@@ -1,0 +1,38 @@
+services:
+  crewops-core:
+    build: .
+    container_name: crewops-core
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - DEMO_MODE=${DEMO_MODE:-true}
+      - CREWAI_STORAGE_DIR=/app/reports/memory
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./reports:/app/reports
+      - ./store:/app/store
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: crewops-core-ollama
+    restart: unless-stopped
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    profiles:
+      - ollama
+
+volumes:
+  ollama_models:
