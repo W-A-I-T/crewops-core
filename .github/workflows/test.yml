@@ -24,38 +24,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           playwright install chromium --with-deps
-          pip install pytest
+          pip install pytest pytest-cov
 
       - name: Forbidden string audit
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          parts = [
-              "nano" + "claw",
-              "nano" + "crew",
-              "WA" + "IT",
-              "Co" + "dex",
-              "Cla" + "ude",
-          ]
-          failures = []
-          for path in Path(".").rglob("*"):
-              if not path.is_file():
-                  continue
-              try:
-                  text = path.read_text(encoding="utf-8", errors="ignore")
-              except Exception:
-                  continue
-              lowered = text.lower()
-              for part in parts:
-                  if part.lower() in lowered:
-                      failures.append(f"{path}: contains forbidden string")
-                      break
-          if failures:
-              raise SystemExit("\n".join(failures))
-          PY
+          python scripts/audit_forbidden_strings.py .
 
       - name: Run tests
-        run: pytest
+        run: |
+          pytest \
+            --cov=crewops_core \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=95
 
       - name: Boot dashboard
         run: |

@@ -89,7 +89,7 @@ async def main():
             elif action == "links":
                 links = await page.eval_on_selector_all(
                     "a[href]",
-                    "els => els.map(e => JSON.stringify({text: e.innerText.trim().slice(0,80), href: e.href}))"
+                    "els => els.map(e => JSON.stringify({{text: e.innerText.trim().slice(0,80), href: e.href}}))"
                 )
                 for l in links[:60]:
                     print(l)

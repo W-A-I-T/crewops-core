@@ -35,6 +35,9 @@ class RuntimeRegistry:
         handler = self.departments[key]
         result = handler(request)
         if inspect.isawaitable(result):
+            close = getattr(result, "close", None)
+            if callable(close):
+                close()
             raise TypeError("Async department handlers are not supported in the sync runtime")
         return result
 
@@ -56,4 +59,3 @@ def register_seed_entities(entities: dict[str, tuple[str, str, list[str]]]) -> N
 
 def register_delivery_adapter(name: str, handler: DeliveryHandler) -> None:
     _runtime.register_delivery_adapter(name, handler)
-
