@@ -4,6 +4,15 @@
 
 W-A-I-T built this project to turn real internal orchestration work into a clean public foundation. It is both an open-source runtime for builders and a public proof point for clients who want to see the kind of AI infrastructure, automation discipline, and product engineering we can deliver.
 
+## Who This Is For
+
+`crewops-core` is for two audiences:
+
+- builders who want a reusable starting point for agent routing, memory, and task execution
+- clients evaluating W-A-I-T and looking for evidence of real AI systems work beyond prompt demos
+
+If you are hiring for AI automation, internal tooling, research workflows, local-first agent infrastructure, or browser-assisted operations systems, this repo is meant to show the level and shape of work we can ship.
+
 ## What This Is
 
 `crewops-core` is the reusable core behind AI systems that need more than a single prompt:
@@ -51,6 +60,24 @@ The same runtime pattern can support projects like:
 - browser-driven process automation
 - internal agent platforms where teams register their own departments and tools
 - local-first AI deployments where auditability and infrastructure control matter
+
+## What Is In Scope
+
+The public repo intentionally includes:
+
+- reusable runtime primitives
+- generic dashboard and API behavior
+- generic tools and adapters
+- local memory and task infrastructure
+- extension hooks for downstream repos
+- examples, tests, CI, and packaging
+
+The public repo intentionally does not include:
+
+- private product workflows
+- customer prompts or business rules
+- client credentials, internal URLs, or delivery secrets
+- one-off automations that only make sense in a private deployment
 
 ## Architecture
 
@@ -111,6 +138,22 @@ The package gives you a few stable primitives instead of a giant framework:
 - generic tools for diagnostics, browser work, local coding flows, and search
 
 The main rule is simple: generic runtime behavior belongs in `crewops-core`; product logic belongs outside it.
+
+## Repository Layout
+
+The repo is organized so the public runtime stays easy to reason about:
+
+| Path | Purpose |
+| --- | --- |
+| `crewops_core/` | Public package with runtime, app, config, memory, and tools |
+| `crewops_core/lib/` | Shared orchestration primitives and persistence helpers |
+| `crewops_core/tools/` | Generic tool adapters for browser work, diagnostics, search, and local coding flows |
+| `crewops_core/static/` | Dashboard UI assets |
+| `examples/` | Small reference integrations and extension patterns |
+| `tests/` | Public unit and API test suite |
+| `.github/workflows/` | CI for audit, tests, coverage, and dashboard boot validation |
+
+This layout is deliberate: reusable runtime code lives in the package, while demos and downstream patterns stay outside the core package boundary.
 
 ## Installation
 
@@ -228,6 +271,19 @@ python scripts/audit_forbidden_strings.py .
 
 See [`examples/`](examples) for small reference extensions.
 
+## How To Add To This Repo
+
+If you want to contribute new functionality, the safest path is:
+
+1. decide whether the feature is truly generic or belongs in a downstream product layer
+2. add or extend runtime behavior inside `crewops_core/` only if it is reusable across domains
+3. prefer registration hooks and small adapters over hardcoded assumptions
+4. add or update tests in `tests/`
+5. run audit, tests, and coverage locally
+6. update the README or examples if the public extension story changed
+
+Good additions usually make the public core more reusable. Bad additions usually smuggle in one product's workflow, naming, or integration assumptions.
+
 ## Contribution Rules
 
 Public contributions to `crewops-core` should follow a few hard rules:
@@ -240,6 +296,19 @@ Public contributions to `crewops-core` should follow a few hard rules:
 - make CI pass before merge, including audit, tests, coverage, and dashboard boot checks
 
 If a change only makes sense for one customer, one product, or one private delivery channel, it belongs downstream rather than in this repo.
+
+A good rule of thumb: if the change improves routing, memory, task handling, generic tools, extension points, or developer ergonomics for many use cases, it probably belongs here. If it introduces business context, customer-specific flows, or branded delivery behavior, it probably does not.
+
+## Engineering Rules
+
+The repo follows a few practical engineering rules:
+
+- keep the public surface provider-neutral and client-safe
+- prefer small, inspectable modules over hidden magic
+- treat local-first execution as the default, with external services as optional layers
+- preserve backward-compatible command entrypoints where practical
+- do not lower the coverage bar to make a change easier to merge
+- document new public extension points when they are introduced
 
 ## Testing and Coverage
 
