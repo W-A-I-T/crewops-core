@@ -55,6 +55,18 @@ If you are hiring for AI automation, internal tooling, research workflows, local
 
 It is designed to stay small, auditable, and adaptable. The core owns the runtime. Product logic belongs in downstream repos.
 
+## Standalone vs Downstream Use
+
+`crewops-core` runs as a standalone public package. You do not need the private `crewops` repo to start the dashboard, use the CLI, or build on the runtime.
+
+The relationship is:
+
+- `crewops-core` is the public infrastructure layer
+- `crewops` is one downstream repo that uses it
+- other public or private repos can use the same pattern
+
+If you already have a similar repo with agents, prompts, domain workflows, or delivery integrations, you can install `crewops-core` there and treat it as the reusable runtime and tooling layer.
+
 ## Why It Was Built
 
 Most AI demos stop at chat. Real client systems need orchestration: they need tasks to be routed, state to be saved, context to be packed, services to be checked, and tools to be swapped without rewriting the whole app.
@@ -199,6 +211,13 @@ crewops-core-dashboard
 
 Then open `http://localhost:8080` and send a task through the dashboard or CLI.
 
+You can also verify the package from the terminal right away:
+
+```bash
+crewops-core --list-depts
+crewops-core --request "Draft an implementation checklist"
+```
+
 ## Installation
 
 ### Clone and install
@@ -215,6 +234,28 @@ cp .env.example .env
 ```bash
 pip install -e .
 ```
+
+### Install from another repo
+
+If you want to use `crewops-core` from a different project, install it as a dependency:
+
+```bash
+pip install git+https://github.com/W-A-I-T/crewops-core.git
+```
+
+For downstream production use, a pinned tag or commit is safer than tracking the moving default branch.
+
+### Use it with a similar repo
+
+Any similar repo can use `crewops-core` as its base if it needs:
+
+- task routing and department registration
+- local memory and task persistence
+- dashboard and API endpoints
+- reusable tool adapters
+- generic runtime infrastructure separated from domain logic
+
+Your repo then owns the domain layer: prompts, crews, business rules, and deployment-specific integrations.
 
 ### Local runtime prerequisites
 
@@ -233,6 +274,8 @@ The `examples/` directory shows a few extension patterns without pulling private
 - `examples/research_content.py` for research and content routing
 - `examples/sales_ops.py` for operations-oriented task flows
 - `examples/private_extension.py` for how a downstream private layer can register extra behavior on top of the core
+
+These examples are intentionally small. They are there to show how another repo can build on the public core without copying the runtime internals into its own codebase.
 
 ## CLI and Dashboard Usage
 
@@ -344,6 +387,28 @@ If you want to contribute new functionality, the safest path is:
 6. update the README or examples if the public extension story changed
 
 Good additions usually make the public core more reusable. Bad additions usually smuggle in one product's workflow, naming, or integration assumptions.
+
+## Working On This Repo
+
+If you want to modify `crewops-core` itself instead of only consuming it as a dependency, the normal workflow is:
+
+1. clone the repo
+2. install it in editable mode
+3. run the dashboard or CLI locally
+4. make changes inside `crewops_core/`
+5. run audit, tests, and coverage before opening a PR
+
+Typical package-development loop:
+
+```bash
+git clone https://github.com/W-A-I-T/crewops-core.git
+cd crewops-core
+cp .env.example .env
+pip install -e .
+crewops-core-dashboard
+```
+
+Editable install mode is the easiest way to work on the package because changes under `crewops_core/` are picked up immediately.
 
 ## Contributing
 

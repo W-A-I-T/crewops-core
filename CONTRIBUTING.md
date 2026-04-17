@@ -4,6 +4,8 @@ Thanks for contributing to `crewops-core`.
 
 This repo is the public, reusable runtime layer. It should stay clean, generic, and safe to build on. Private business logic, customer flows, and branded delivery behavior belong downstream, not in this repository.
 
+`crewops-core` does not require the private `crewops` repo in order to run. `crewops` is one downstream consumer, not a runtime dependency. Other similar repos can consume this package in the same way.
+
 ## What belongs here
 
 Good contributions usually improve one of these:
@@ -29,6 +31,18 @@ git clone https://github.com/W-A-I-T/crewops-core.git
 cd crewops-core
 cp .env.example .env
 ./install.sh
+```
+
+If you are modifying the package itself, editable install is the normal workflow:
+
+```bash
+pip install -e .
+```
+
+If you are consuming the package from another repo, install it there as a dependency:
+
+```bash
+pip install git+https://github.com/W-A-I-T/crewops-core.git
 ```
 
 Useful local commands:
