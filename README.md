@@ -1,8 +1,38 @@
 # crewops-core
 
-`crewops-core` is a local-first agent runtime and control layer for building practical AI operations systems: routed tasks, reusable departments, compact context, persistent memory, dashboard APIs, and automation tools in one inspectable package.
+[![CI](https://github.com/W-A-I-T/crewops-core/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/W-A-I-T/crewops-core/actions/workflows/test.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11%2B-3776AB.svg)](pyproject.toml)
+[![Coverage Policy](https://img.shields.io/badge/coverage%20gate-95%25-brightgreen.svg)](.github/workflows/test.yml)
+
+`crewops-core` is a local-first agent runtime and control layer for building practical AI operations systems: routed tasks, reusable departments, compact context, persistent memory, dashboard APIs, and automation tools in one inspectable package. It is designed to show what serious, reusable AI infrastructure looks like when it is built for real operations instead of one-off demos.
 
 W-A-I-T built this project to turn real internal orchestration work into a clean public foundation. It is both an open-source runtime for builders and a public proof point for clients who want to see the kind of AI infrastructure, automation discipline, and product engineering we can deliver.
+
+Start here:
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Examples in This Repo](#examples-in-this-repo)
+- [How To Extend This Repo](#how-to-extend-this-repo)
+- [Contributing](#contributing)
+
+## Highlights
+
+- local-first runtime with a small, inspectable core
+- reusable routing, memory, health checks, and task state
+- generic dashboard and CLI entrypoints
+- public-safe extension hooks for downstream repos
+- CI, audit policy, and coverage gates that keep the repo production-minded
+
+## Why Teams Use This
+
+Teams use `crewops-core` when they need more than a single prompt window:
+
+- orchestration across different work lanes or departments
+- task state and memory that survive beyond one run
+- browser and automation support without burying everything in app-specific code
+- an extensible foundation that private or client-specific systems can build on cleanly
 
 ## Who This Is For
 
@@ -155,6 +185,20 @@ The repo is organized so the public runtime stays easy to reason about:
 
 This layout is deliberate: reusable runtime code lives in the package, while demos and downstream patterns stay outside the core package boundary.
 
+## Quick Start
+
+Get the runtime running locally:
+
+```bash
+git clone https://github.com/W-A-I-T/crewops-core.git
+cd crewops-core
+cp .env.example .env
+./install.sh
+crewops-core-dashboard
+```
+
+Then open `http://localhost:8080` and send a task through the dashboard or CLI.
+
 ## Installation
 
 ### Clone and install
@@ -180,6 +224,15 @@ The base package works without every optional integration enabled. For a fuller 
 - Playwright Chromium installed through `install.sh`
 - optional Ollama for local model serving
 - optional API keys only for the services you actually enable
+
+## Examples in This Repo
+
+The `examples/` directory shows a few extension patterns without pulling private business logic into the public repo:
+
+- `examples/software_delivery.py` for software planning and delivery support
+- `examples/research_content.py` for research and content routing
+- `examples/sales_ops.py` for operations-oriented task flows
+- `examples/private_extension.py` for how a downstream private layer can register extra behavior on top of the core
 
 ## CLI and Dashboard Usage
 
@@ -217,6 +270,14 @@ curl -X POST http://localhost:8080/api/task \
   -H "Content-Type: application/json" \
   -d '{"dept":"software","request":"Draft a deploy checklist"}'
 ```
+
+## Support
+
+Use GitHub Issues for bugs, feature requests, and documentation improvements. Use the issue templates so reports come in with the right context.
+
+For security-sensitive problems, do not open a public issue. Follow the guidance in [SECURITY.md](SECURITY.md).
+
+If you are using `crewops-core` as a downstream base, keep product-specific workflows and secrets outside this repo and treat the public package as the reusable runtime layer.
 
 ## How To Extend This Repo
 
@@ -284,6 +345,18 @@ If you want to contribute new functionality, the safest path is:
 
 Good additions usually make the public core more reusable. Bad additions usually smuggle in one product's workflow, naming, or integration assumptions.
 
+## Contributing
+
+For the full contribution workflow, read [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Short version:
+
+- keep changes generic and public-safe
+- add or update tests
+- preserve the `95%` coverage gate
+- run the forbidden-name audit before opening a PR
+- update docs or examples when the public extension story changes
+
 ## Contribution Rules
 
 Public contributions to `crewops-core` should follow a few hard rules:
@@ -309,6 +382,16 @@ The repo follows a few practical engineering rules:
 - preserve backward-compatible command entrypoints where practical
 - do not lower the coverage bar to make a change easier to merge
 - document new public extension points when they are introduced
+
+## Roadmap
+
+Near-term public improvements for `crewops-core`:
+
+- expand example departments and integration patterns
+- improve runtime observability and operator-facing diagnostics
+- add more reference docs for downstream private extensions
+- refine local service health reporting and bootstrap ergonomics
+- prepare tagged public releases with clearer versioning guidance
 
 ## Testing and Coverage
 
@@ -336,6 +419,15 @@ Run the audit:
 ```bash
 python scripts/audit_forbidden_strings.py .
 ```
+
+## Support and Contribution
+
+If you want to use, evaluate, or contribute to this repo:
+
+- read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, rules, and PR expectations
+- use the GitHub issue templates for bugs, features, and docs updates
+- follow [SECURITY.md](SECURITY.md) for vulnerability reporting
+- keep private prompts, branded workflows, and customer-specific integrations out of the public core
 
 ## Release Expectations
 
