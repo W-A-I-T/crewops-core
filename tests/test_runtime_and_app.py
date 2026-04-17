@@ -1,5 +1,7 @@
 import json
 import os
+import sys
+from importlib import import_module
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -163,6 +165,57 @@ def test_app_root_and_lifespan_startup(tmp_path, monkeypatch):
     assert root.status_code == 200
     assert "crewops-core" in root.text
     assert status.status_code == 200
+
+
+def test_package_entrypoints_are_importable():
+    cli_module = import_module("crewops_core.cli")
+    dashboard_module = import_module("crewops_core.dashboard_cli")
+
+    assert callable(cli_module.main)
+    assert callable(dashboard_module.main)
+    assert getattr(dashboard_module.app, "title", "") == "crewops-core"
+
+
+def test_cli_lists_departments(monkeypatch, capsys):
+    _reset_runtime()
+    cli_module = import_module("crewops_core.cli")
+    monkeypatch.setattr(sys, "argv", ["crewops-core", "--list-depts"])
+
+    cli_module.main()
+
+    output = json.loads(capsys.readouterr().out)
+    assert output == ["operations", "research", "software"]
+
+
+def test_cli_dispatches_request(monkeypatch, capsys):
+    _reset_runtime()
+    cli_module = import_module("crewops_core.cli")
+    monkeypatch.setattr(sys, "argv", ["crewops-core", "--dept", "research", "--request", "map the market"])
+
+    cli_module.main()
+
+    assert "[research] collected notes for: map the market" in capsys.readouterr().out
+
+
+def test_dashboard_main_runs_package_app(monkeypatch):
+    dashboard_module = import_module("crewops_core.dashboard_cli")
+    seen = {}
+
+    def fake_run(target, host, port, reload):
+        seen["target"] = target
+        seen["host"] = host
+        seen["port"] = port
+        seen["reload"] = reload
+
+    monkeypatch.setattr(dashboard_module.uvicorn, "run", fake_run)
+    dashboard_module.main()
+
+    assert seen == {
+        "target": "crewops_core.dashboard_cli:app",
+        "host": "0.0.0.0",
+        "port": 8080,
+        "reload": False,
+    }
 
 
 def test_rate_guard_rpd_state_survives_restart(tmp_path, monkeypatch):

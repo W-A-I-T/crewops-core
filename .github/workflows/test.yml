@@ -40,20 +40,46 @@ jobs:
 
       - name: Boot dashboard
         run: |
+          set -euo pipefail
           cp .env.example .env
-          crewops-core-dashboard &
+          DASHBOARD_LOG="$(mktemp)"
+          echo "DASHBOARD_LOG=$DASHBOARD_LOG" >> $GITHUB_ENV
+          crewops-core-dashboard >"$DASHBOARD_LOG" 2>&1 &
           echo "DASHBOARD_PID=$!" >> $GITHUB_ENV
+          READY=0
           for i in $(seq 1 30); do
-            curl -sf http://localhost:8080/api/status && break
+            if curl -sf http://localhost:8080/api/status >/dev/null; then
+              READY=1
+              break
+            fi
             sleep 1
           done
+          if [ "$READY" -ne 1 ]; then
+            cat "$DASHBOARD_LOG"
+            exit 1
+          fi
 
       - name: Check endpoints
         run: |
+          set -euo pipefail
           curl -sf http://localhost:8080/
           curl -sf http://localhost:8080/api/status
           curl -sf http://localhost:8080/api/services/health
+        env:
+          DASHBOARD_LOG: ${{ env.DASHBOARD_LOG }}
+        continue-on-error: false
+
+      - name: Print dashboard log on failure
+        if: failure()
+        run: |
+          if [ -n "${DASHBOARD_LOG:-}" ] && [ -f "${DASHBOARD_LOG}" ]; then
+            cat "${DASHBOARD_LOG}"
+          fi
 
       - name: Stop dashboard
         if: always()
-        run: kill $DASHBOARD_PID 2>/dev/null || true
+        run: |
+          kill ${DASHBOARD_PID:-} 2>/dev/null || true
+          if [ -n "${DASHBOARD_LOG:-}" ] && [ -f "${DASHBOARD_LOG}" ]; then
+            rm -f "${DASHBOARD_LOG}"
+          fi

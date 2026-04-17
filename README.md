@@ -1,68 +1,144 @@
 # crewops-core
 
-`crewops-core` is a local-first agent runtime for building reusable automation systems around a small, inspectable core:
+`crewops-core` is a local-first agent runtime and control layer for building practical AI operations systems: routed tasks, reusable departments, compact context, persistent memory, dashboard APIs, and automation tools in one inspectable package.
 
-- department registration and task dispatch
-- compact context packs for grounded execution
-- a lightweight SQLite-backed memory spine
-- a generic FastAPI dashboard and task API
-- optional adapters for local coding agents, browser automation, diagnostics, and search
+W-A-I-T built this project to turn real internal orchestration work into a clean public foundation. It is both an open-source runtime for builders and a public proof point for clients who want to see the kind of AI infrastructure, automation discipline, and product engineering we can deliver.
 
-It is meant to be extended. The core stays neutral and reusable; downstream repos add product-specific departments, seeded entities, delivery adapters, and domain workflows on top.
+## What This Is
 
-## What it provides
+`crewops-core` is the reusable core behind AI systems that need more than a single prompt:
 
-`crewops-core` gives you a few stable primitives instead of a giant monolith:
+- task routing across named departments or execution lanes
+- memory and context management for repeated work
+- browser and local tooling integration
+- a dashboard and API for task submission, health, and review
+- extension hooks so private or client-specific layers can sit on top without forking the core
 
-- `RuntimeRegistry` for registering departments and delivery adapters
-- task persistence and compact context generation
-- memory ingestion, promotion, and suggestion scaffolding
-- a thin dashboard and JSON API for task execution and review
-- generic tools for browser work, diagnostics, search, and local agent delegation
+It is designed to stay small, auditable, and adaptable. The core owns the runtime. Product logic belongs in downstream repos.
+
+## Why It Was Built
+
+Most AI demos stop at chat. Real client systems need orchestration: they need tasks to be routed, state to be saved, context to be packed, services to be checked, and tools to be swapped without rewriting the whole app.
+
+`crewops-core` exists to solve that problem in a public-safe way. W-A-I-T extracted the reusable runtime pieces from real multi-agent implementation work so the public repo could stand on its own:
+
+- no private business workflows
+- no customer-specific prompts or credentials
+- no delivery-channel lock-in
+- no dependence on private product repos
+
+That makes the repo useful for builders and meaningful for clients evaluating what our team can actually ship.
+
+## What It Demonstrates
+
+This repo is a working example of the capabilities W-A-I-T can deliver for client engagements and internal platforms:
+
+- multi-agent orchestration with explicit department routing
+- local-first AI runtime design that can still plug into optional external services
+- task execution, persistence, and recovery
+- memory and context management for longer-running workflows
+- browser and automation tooling for web-based work
+- diagnostics, health checks, and service visibility
+- packaging, CI, testing discipline, and release hygiene suitable for production engineering
+
+## Typical Client Use Cases
+
+The same runtime pattern can support projects like:
+
+- AI operations dashboards for internal teams
+- research and reporting workflows
+- software delivery assistants for planning, QA, and release support
+- browser-driven process automation
+- internal agent platforms where teams register their own departments and tools
+- local-first AI deployments where auditability and infrastructure control matter
 
 ## Architecture
 
 ```text
-client or event source
-        |
-        v
-dashboard + task API
-        |
-        +--> department registry
-        +--> context pack builder
-        +--> memory spine
-        +--> optional local agent adapters
+client, cron, webhook, or operator
+              |
+              v
+      dashboard + task API
+              |
+      +-------+--------+------------------+
+      |                |                  |
+      v                v                  v
+department registry  context packs   service health
+      |                |                  |
+      +---------> runtime dispatch <------+
+                        |
+                        v
+               tools and agent adapters
+                        |
+                        v
+                  memory spine
 ```
 
-The package keeps the core loop small:
+The execution loop stays intentionally simple:
 
-1. register departments
-2. accept a task
-3. persist task state
-4. enrich with compact context
-5. execute through the selected department or adapter
-6. sync artifacts and recent events into the memory spine
+1. register departments, seeded entities, and optional adapters
+2. accept a task from the CLI, API, or downstream integration
+3. persist state and build compact context
+4. dispatch to the selected department or tool layer
+5. record results and sync memory for later follow-up
 
-## Install
+## Technology Stack
 
-### Local editable install
+| Technology | Role in the system |
+| --- | --- |
+| Python 3.11+ | Core runtime language and packaging target |
+| FastAPI | Dashboard and JSON API surface |
+| Pydantic | Request validation and config shaping |
+| SQLite | Lightweight local persistence for the memory spine |
+| CrewAI | Optional crew and agent execution primitives |
+| Playwright | Browser automation and page interaction |
+| Docker / Docker Compose | Local packaging and service orchestration |
+| Ollama | Local model serving for local-first deployments |
+| GitHub Actions | CI for audit, tests, coverage, and boot checks |
+| pytest / pytest-cov | Unit, API, and coverage enforcement |
+
+Optional integrations can layer on top for search, embeddings, cloud models, or local coding agents, but the public runtime stays usable without turning those into hard requirements.
+
+## How It Works
+
+The package gives you a few stable primitives instead of a giant framework:
+
+- `RuntimeRegistry` for department registration and delivery adapter registration
+- task state persistence for active work
+- context pack generation for grounded execution
+- memory ingestion, review, and suggestion scaffolding
+- a dashboard shell and API for synchronous task execution and runtime inspection
+- generic tools for diagnostics, browser work, local coding flows, and search
+
+The main rule is simple: generic runtime behavior belongs in `crewops-core`; product logic belongs outside it.
+
+## Installation
+
+### Clone and install
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/W-A-I-T/crewops-core.git
 cd crewops-core
 cp .env.example .env
 ./install.sh
 ```
 
-That installs the package in editable mode and prepares the default local environment.
-
-### Package install
+### Editable package install
 
 ```bash
 pip install -e .
 ```
 
-## Quick start
+### Local runtime prerequisites
+
+The base package works without every optional integration enabled. For a fuller local-first setup, the common path is:
+
+- Python 3.11+
+- Playwright Chromium installed through `install.sh`
+- optional Ollama for local model serving
+- optional API keys only for the services you actually enable
+
+## CLI and Dashboard Usage
 
 Run the dashboard:
 
@@ -76,22 +152,20 @@ Run the CLI:
 
 ```bash
 crewops-core --request "Draft a rollout checklist"
-crewops-core --dept research --request "Summarize local agent deployment options"
+crewops-core --dept research --request "Summarize local deployment options"
 crewops-core --list-depts
 ```
 
-## Dashboard and API
+The built-in API exposes a compact runtime surface:
 
-The built-in app exposes a small generic surface:
-
-- `GET /` for the dashboard shell
-- `GET /api/status` for runtime status and registered departments
-- `GET /api/services/health` for local service health
-- `POST /api/task` for synchronous task execution
-- `GET /api/task/{task_id}` for stored task state
-- `GET /api/jarvis/overview` for memory sync summary
-- `GET /api/jarvis/memories` for stored memories
-- `GET /api/jarvis/suggestions` for suggested follow-ups
+- `GET /`
+- `GET /api/status`
+- `GET /api/services/health`
+- `POST /api/task`
+- `GET /api/task/{task_id}`
+- `GET /api/jarvis/overview`
+- `GET /api/jarvis/memories`
+- `GET /api/jarvis/suggestions`
 
 Example task request:
 
@@ -101,9 +175,11 @@ curl -X POST http://localhost:8080/api/task \
   -d '{"dept":"software","request":"Draft a deploy checklist"}'
 ```
 
-## Extending the runtime
+## How To Extend This Repo
 
-### Register departments
+The intended extension model is additive, not invasive.
+
+### 1. Register a department
 
 ```python
 from crewops_core import register_department
@@ -111,7 +187,7 @@ from crewops_core import register_department
 register_department("support", lambda request: f"support handled: {request}")
 ```
 
-### Register seeded entities
+### 2. Register seeded entities
 
 ```python
 from crewops_core import register_seed_entities
@@ -123,7 +199,7 @@ register_seed_entities(
 )
 ```
 
-### Register delivery adapters
+### 3. Register delivery adapters
 
 ```python
 from crewops_core import register_delivery_adapter
@@ -131,73 +207,76 @@ from crewops_core import register_delivery_adapter
 register_delivery_adapter("webhook", lambda payload: {"delivered": True, "payload": payload})
 ```
 
-See [`examples/`](examples) for small reference integrations.
+### 4. Keep product logic outside core
 
-## Configuration
+Use downstream repos or private packages for:
 
-Copy `.env.example` to `.env` and fill in only what you need.
+- client workflows
+- domain prompts
+- customer integrations
+- proprietary business logic
 
-Most useful settings:
+### 5. Add tests and pass the public gates
 
-| Variable | Purpose |
-| --- | --- |
-| `DEMO_MODE` | Prefer a local-first setup |
-| `OLLAMA_BASE_URL` | Override the local model endpoint |
-| `GEMINI_API_KEY` | Optional cloud fallback and embeddings |
-| `NVIDIA_API_KEY` | Optional asymmetric embedding backend |
-| `SERPER_API_KEY` | Optional structured web search |
-| `LOCAL_CODING_AGENT_URL` | Local coding agent endpoint |
-| `CODING_AGENT_BIN` | Optional coding agent CLI binary |
-| `RESEARCH_AGENT_BIN` | Optional research agent CLI binary |
-| `CREWAI_STORAGE_DIR` | Override memory storage path |
-| `JARVIS_SPINE_DB_PATH` | Override the SQLite memory spine location |
+Before merge, run:
 
-## Examples
+```bash
+pytest
+pytest --cov=crewops_core --cov-report=term-missing --cov-fail-under=95
+python scripts/audit_forbidden_strings.py .
+```
 
-The repo includes simple examples for:
+See [`examples/`](examples) for small reference extensions.
 
-- software delivery
-- research and content
-- operations
-- private downstream extension
+## Contribution Rules
 
-These are intentionally small and meant to show the registration pattern, not to act as full product templates.
+Public contributions to `crewops-core` should follow a few hard rules:
 
-## Testing and coverage
+- do not commit secrets, customer data, private URLs, or internal credentials
+- do not move product-specific business logic into the public core
+- keep exported names, examples, and docs neutral and public-safe
+- extend through registration hooks instead of patching core assumptions where possible
+- keep tests current and preserve the `95%` coverage gate
+- make CI pass before merge, including audit, tests, coverage, and dashboard boot checks
 
-The public repo enforces a strict CI bar:
+If a change only makes sense for one customer, one product, or one private delivery channel, it belongs downstream rather than in this repo.
 
-- forbidden-name audit for banned external/product references
+## Testing and Coverage
+
+The public CI enforces:
+
+- forbidden-name audit for banned external or private references
 - unit and API tests
 - dashboard boot and endpoint checks
 - minimum `95%` line coverage on the `crewops_core` package
 
-Run the local test suite:
+Run the local suite:
 
 ```bash
 pytest
 ```
 
-Run the coverage gate locally:
+Run the coverage gate:
 
 ```bash
-pytest --cov=crewops_core --cov-report=term-missing --cov-fail-under=95
+pytest --cov=crewops_core --cov-report=term-missing --cov-report=xml --cov-fail-under=95
 ```
 
-Run the forbidden-string audit:
+Run the audit:
 
 ```bash
 python scripts/audit_forbidden_strings.py .
 ```
 
-## Release expectations
+## Release Expectations
 
-`crewops-core` is intended to be published as a standalone reusable foundation. Public changes should:
+Public releases should keep the runtime easy to adopt and safe to extend:
 
-- keep the exported surface neutral
-- avoid product-specific prompts, URLs, and business logic
-- preserve extension hooks for downstream repos
-- maintain the 95% coverage threshold
+- preserve stable package-owned entrypoints
+- keep the dashboard and API generic
+- maintain public-safe naming and examples
+- prefer extension hooks over one-off hardcoding
+- keep tests and coverage healthy as the runtime grows
 
 ## License
 
